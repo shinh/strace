@@ -130,4 +130,7 @@ AC_CHECK_HEADERS(sys/reg.h sys/filio.h sys/acl.h sys/asynch.h sys/door.h sys/str
 AC_DECL_SYS_ERRLIST
 AC_DECL_SYS_SIGLIST
 AC_DECL__SYS_SIGLIST
+if test ! -d $osarch; then
+	mkdir -p $osarch
+fi
 AC_OUTPUT(Makefile $osarch/Makefile)

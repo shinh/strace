@@ -57,7 +57,11 @@
 #include <sys/utsname.h>
 #endif /* SUNOS4_KERNEL_ARCH_KLUDGE */
 
-#if defined(LINUX) && defined(SPARC) && !defined(__GLIBC__)
+#if defined(LINUX) && defined(SPARC)
+
+#include <asm/reg.h>
+
+#if !defined(__GLIBC__)
 
 #include <linux/unistd.h>
 
@@ -92,6 +96,8 @@ return -1; \
 static _hack_syscall5(int,_ptrace,int,__request,int,__pid,int,__addr,int,__data,int,__addr2,ptrace)
 
 #define _ptrace
+
+#endif
 
 #endif
 
@@ -878,10 +884,10 @@ struct tcb *tcp;
 		return -1;
 #else /* !ALPHA */
 #ifdef SPARC
-	struct pt_regs regs;
+	struct regs regs;
 	if (ptrace(PTRACE_GETREGS,tcp->pid,(char *)&regs,0) < 0)
 		return -1;
-	pc = regs.pc;
+	pc = regs.r_pc;
 #endif /* SPARC */
 #endif /* ALPHA */
 #endif /* !M68K */
@@ -955,12 +961,12 @@ struct tcb *tcp;
 	tprintf("[%08lx] ", pc);
 #else /* !ALPHA */
 #ifdef SPARC
-	struct pt_regs regs;
+	struct regs regs;
 	if (ptrace(PTRACE_GETREGS,tcp->pid,(char *)&regs,0) < 0) {
 		tprintf("[????????] ");
 		return;
 	}
-	tprintf("[%08lx] ", regs.pc);
+	tprintf("[%08lx] ", regs.r_pc);
 #endif /* SPARC */
 #endif /* ALPHA */
 #endif /* !M68K */
@@ -997,7 +1003,7 @@ struct tcb *tcp;
 #ifdef SPARC
 	/* We simply use the SunOS breakpoint code. */
 
-	struct pt_regs regs;
+	struct regs regs;
 #define LOOPA	0x30800000	/* ba,a	0 */
 
 	if (tcp->flags & TCB_BPTSET) {
@@ -1008,9 +1014,7 @@ struct tcb *tcp;
 		perror("setbpt: ptrace(PTRACE_GETREGS, ...)");
 		return -1;
 	}
-	memmove (&regs.u_regs [1], &regs.u_regs [0],
-		 sizeof (regs.u_regs) - sizeof (regs.u_regs [0]));
-	tcp->baddr = regs.u_regs[UREG_I7] + 8;
+	tcp->baddr = regs.r_o7 + 8;
 	errno = 0;
 	tcp->inst[0] = ptrace(PTRACE_PEEKTEXT, tcp->pid, (char *)tcp->baddr, 0);
 	if(errno) {

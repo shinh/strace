@@ -38,6 +38,10 @@
 #include <sys/syscall.h>
 #include <sys/param.h>
 
+#if defined(LINUX) && defined(SPARC)
+#include <asm/reg.h>
+#endif
+
 #ifdef HAVE_SYS_REG_H
 #include <sys/reg.h>
 # define PTRACE_PEEKUSR PTRACE_PEEKUSER
@@ -579,7 +583,7 @@ struct tcb *tcp;
 	long r0;
 	long a3;
 #elif defined (SPARC)
-	struct pt_regs regs;
+	struct regs regs;
 	unsigned long trap;
 #endif 
 #endif /* LINUX */
@@ -650,14 +654,11 @@ struct tcb *tcp;
 	if (ptrace(PTRACE_GETREGS,pid,(char *)&regs,0) < 0)
 		return -1;
 
-	memmove (&regs.u_regs [1], &regs.u_regs [0],
-		 sizeof (regs.u_regs) - sizeof (regs.u_regs [0]));
-
         /* If we are entering, then disassemble the syscall trap. */
 	if (!(tcp->flags & TCB_INSYSCALL)) {
 		/* Retrieve the syscall trap instruction. */
 		errno = 0;
-		trap = ptrace(PTRACE_PEEKTEXT,pid,(char *)regs.pc,0);
+		trap = ptrace(PTRACE_PEEKTEXT,pid,(char *)regs.r_pc,0);
 		if (errno)
 			return -1;
 
@@ -693,7 +694,7 @@ struct tcb *tcp;
 				tcp->flags &= ~TCB_WAITEXECVE;
 				return 0;
 			}
-			fprintf(stderr,"syscall: unknown syscall trap %08x %08x\n", trap, regs.pc);
+			fprintf(stderr,"syscall: unknown syscall trap %08x %08x\n", trap, regs.r_pc);
 			return -1;
 		}
 
@@ -701,10 +702,10 @@ struct tcb *tcp;
 		if (trap == 0x91d02027)
 			scno = 156;
 		else
-			scno = regs.u_regs[UREG_G1];
+			scno = regs.r_g1;
 		if (scno == 0) {
-			scno = regs.u_regs[UREG_I0];
-			memmove (&regs.u_regs[UREG_I0], &regs.u_regs[UREG_I1], 7*sizeof(regs.u_regs[0]));
+			scno = regs.r_o0;
+			memmove (&regs.r_o0, &regs.r_o1, 7*sizeof(regs.r_o0));
 		}
 	}
 #endif 
@@ -858,12 +859,12 @@ struct tcb *tcp;
 		}
 #else /* !ALPHA */
 #ifdef SPARC
-		if (regs.psr & PSR_C) {
+		if (regs.r_psr & PSR_C) {
 			tcp->u_rval = -1;
-			u_error = regs.u_regs[UREG_I0];
+			u_error = regs.r_o0;
 		}
 		else {
-			tcp->u_rval = regs.u_regs[UREG_I0];
+			tcp->u_rval = regs.r_o0;
 			u_error = 0;
 		}
 #endif /* SPARC */
@@ -1074,12 +1075,11 @@ struct tcb *tcp;
 	}
 #elif defined (SPARC)
 	{
-		int i, offset;
+		int i;
 	         
-	        offset = UREG_I0;
 		tcp->u_nargs = sysent[tcp->scno].nargs;
 		for (i = 0; i < tcp->u_nargs; i++)
-			tcp->u_arg[i] = regs.u_regs[offset + i];
+			tcp->u_arg[i] = *((&regs.r_o0) + i);
 	}
 #else 
 	{
@@ -1292,10 +1292,10 @@ struct tcb *tcp;
 
 #ifdef LINUX
 #ifdef SPARC
-	struct pt_regs regs;
+	struct regs regs;
 	if (ptrace(PTRACE_GETREGS,tcp->pid,(char *)&regs,0) < 0)
 		return -1;
-	val = regs.u_regs[UREG_I1];
+	val = regs.r_o1;
 #endif /* SPARC */
 #endif /* LINUX */
 
