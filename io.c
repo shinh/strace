@@ -70,6 +70,13 @@ int len;
 char * addr;
 {
 	struct iovec *iov;
+#ifdef	IA64
+	struct iovec32 {
+		unsigned int iov_base;
+		unsigned int iov_len;
+	} *iov32;
+	extern long ia32;
+#endif	// IA64
 	int i;
 
 
@@ -82,10 +89,33 @@ char * addr;
 		fprintf(stderr, "No memory");
 		return;
 	}
-	if (umoven(tcp, (int) addr,
+#ifdef	IA64
+	if (ia32) {
+		if ((iov32 = (struct iovec32 *) malloc(len * sizeof *iov32)) == NULL) {
+			fprintf(stderr, "No memory");
+			free((char *)iov);
+			return;
+		}
+		if (umoven(tcp, (long) addr,
+			   len * sizeof *iov32, (char *) iov32) < 0) {
+			tprintf("%#lx", tcp->u_arg[1]);
+			free((char *)iov);
+			free((char *)iov32);
+			return;
+		}
+		for (i = 0; i < len; i++) {
+			iov[i].iov_base = iov32[i].iov_base;
+			iov[i].iov_len = iov32[i].iov_len;
+		}
+		free((char *)iov32);
+		goto list;
+	}
+#endif	// IA64
+	if (umoven(tcp, (long) addr,
 		   len * sizeof *iov, (char *) iov) < 0) {
 		tprintf("%#lx", tcp->u_arg[1]);
 	} else {
+list:
 		tprintf("[");
 		for (i = 0; i < len; i++) {
 			if (i)

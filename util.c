@@ -1456,7 +1456,7 @@ struct tcb *tcp;
 		fprintf(stderr, "fixvfork: out of memory\n");
 		return -1;
 	}
-	if (umoven(tcp, (int)ld.ld_symbols+(int)N_TXTADDR(hdr),
+	if (umoven(tcp, (long)ld.ld_symbols+(int)N_TXTADDR(hdr),
 					(int)ld.ld_symb_size, strtab) < 0)
 		goto err;
 

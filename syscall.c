@@ -428,7 +428,7 @@ const struct subcall subcalls_table[] = {
 };
 #endif /* FREEBSD */
 
-#if !(defined(LINUX) && ( defined(ALPHA) || defined(IA64) || defined(MIPS) ))
+#if !(defined(LINUX) && ( defined(ALPHA) || defined(MIPS) ))
 
 const int socket_map [] = {
 	       /* SYS_SOCKET      */ 97,
@@ -1512,7 +1512,7 @@ struct tcb *tcp;
 
 	switch (tcp->scno + NR_SYSCALL_BASE) {
 #ifdef LINUX
-#if !defined (ALPHA) && !defined(IA64) && !defined(SPARC) && !defined(MIPS)
+#if !defined (ALPHA) && !defined(SPARC) && !defined(MIPS)
 	case SYS_socketcall:
 		decode_subcall(tcp, SYS_socket_subcall,
 			SYS_socket_nsubcalls, deref_style);

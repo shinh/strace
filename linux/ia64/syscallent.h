@@ -143,7 +143,7 @@
 	{ 4,	TP,	sys_wait4,		"wait4"		}, /* 114 */
 	{ 1,	0,	sys_swapoff,		"swapoff"	}, /* 115 */
 	{ 1,	0,	sys_sysinfo,		"sysinfo"	}, /* 116 */
-	{ 8,	0,	printargs,		"SYS_117"	}, /* 117 */
+	{ 8,	0,	sys_ipc,		"ipc"		}, /* 117 */
 	{ 1,	0,	sys_fsync,		"fsync"		}, /* 118 */
 	{ 1,	TS,	sys_sigreturn,		"sigreturn"	}, /* 119 */
 	{ 2,	TP,	sys_clone,		"clone"		}, /* 120 */
@@ -279,10 +279,11 @@
 	{ 5,	TN,	sys_recvmsg,		"recvmsg"	}, /* 247 */
 	{ 5,	0,	printargs,		"SYS_248"	}, /* 248 */
 	{ 5,	0,	printargs,		"SYS_249"	}, /* 249 */
-	{ 8,	0,	printargs,		"SYS_250"	}, /* 250 */
-	{ 8,	0,	printargs,		"SYS_251"	}, /* 251 */
-	{ 8,	0,	printargs,		"SYS_252"	}, /* 252 */
-	{ 8,	0,	printargs,		"SYS_253"	}, /* 253 */
+
+	{ 4,	0,	printargs,		"ipc_subcall"	}, /* 250 */
+	{ 4,	TI,	sys_semop,		"semop"		}, /* 251 */
+	{ 4,	TI,	sys_semget,		"semget"	}, /* 252 */
+	{ 4,	TI,	sys_semctl,		"semctl"	}, /* 253 */
 	{ 8,	0,	printargs,		"SYS_254"	}, /* 254 */
 	{ 8,	0,	printargs,		"SYS_255"	}, /* 255 */
 	{ 8,	0,	printargs,		"SYS_256"	}, /* 256 */
@@ -290,20 +291,20 @@
 	{ 8,	0,	printargs,		"SYS_258"	}, /* 258 */
 	{ 8,	0,	printargs,		"SYS_259"	}, /* 259 */
 	{ 8,	0,	printargs,		"SYS_260"	}, /* 260 */
-	{ 8,	0,	printargs,		"SYS_261"	}, /* 261 */
-	{ 8,	0,	printargs,		"SYS_262"	}, /* 262 */
-	{ 8,	0,	printargs,		"SYS_263"	}, /* 263 */
-	{ 8,	0,	printargs,		"SYS_264"	}, /* 264 */
+	{ 4,	TI,	sys_msgsnd,		"msgsnd"	}, /* 261 */
+	{ 4,	TI,	sys_msgrcv,		"msgrcv"	}, /* 262 */
+	{ 4,	TI,	sys_msgget,		"msgget"	}, /* 263 */
+	{ 4,	TI,	sys_msgctl,		"msgctl"	}, /* 264 */
 	{ 8,	0,	printargs,		"SYS_265"	}, /* 265 */
 	{ 8,	0,	printargs,		"SYS_266"	}, /* 266 */
 	{ 8,	0,	printargs,		"SYS_267"	}, /* 267 */
 	{ 8,	0,	printargs,		"SYS_268"	}, /* 268 */
 	{ 8,	0,	printargs,		"SYS_269"	}, /* 269 */
 	{ 8,	0,	printargs,		"SYS_270"	}, /* 270 */
-	{ 8,	0,	printargs,		"SYS_271"	}, /* 271 */
-	{ 8,	0,	printargs,		"SYS_272"	}, /* 272 */
-	{ 8,	0,	printargs,		"SYS_273"	}, /* 273 */
-	{ 8,	0,	printargs,		"SYS_274"	}, /* 274 */
+	{ 4,	TI,	sys_shmat,		"shmat"		}, /* 271 */
+	{ 4,	TI,	sys_shmdt,		"shmdt"		}, /* 272 */
+	{ 4,	TI,	sys_shmget,		"shmget"	}, /* 273 */
+	{ 4,	TI,	sys_shmctl,		"shmctl"	}, /* 274 */
 	{ 8,	0,	printargs,		"SYS_275"	}, /* 275 */
 	{ 8,	0,	printargs,		"SYS_276"	}, /* 276 */
 	{ 8,	0,	printargs,		"SYS_277"	}, /* 277 */
