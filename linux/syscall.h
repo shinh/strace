@@ -83,6 +83,9 @@ int sys_rt_sigpending(), sys_rt_sigsuspend(), sys_rt_sigqueueinfo();
 int sys_rt_sigtimedwait(), sys_prctl(), sys_poll(), sys_vfork();
 int sys_sendfile(), sys_old_mmap(), sys_stat64(), sys_lstat64(), sys_fstat64();
 int sys_truncate64(), sys_ftruncate64(), sys_pivotroot();
+#ifdef __ia64__
+int sys_clone2();
+#endif
 
 
 /* sys_socketcall subcalls */

@@ -42,11 +42,28 @@ struct tcb *tcp;
 long addr;
 {
 	struct timeval tv;
+#ifdef	IA64
+	extern long ia32;
+#endif	// IA64
 
 	if (addr == 0)
 		tprintf("NULL");
 	else if (!verbose(tcp))
 		tprintf("%#lx", addr);
+#ifdef	IA64
+	else if (ia32) {
+		struct timeval32 {
+			int	tv_sec;
+			int	tv_usec;
+		} tv32;
+
+		if (umove(tcp, addr, &tv32) < 0)
+				tprintf("{...}");
+			else
+				tprintf("{%lu, %lu}", (long) tv32.tv_sec,
+						      (long) tv32.tv_usec);
+	}
+#endif	// IA64
 	else if (umove(tcp, addr, &tv) < 0)
 		tprintf("{...}");
 	else

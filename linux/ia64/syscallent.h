@@ -39,7 +39,7 @@
 	{ 1,	TF,	sys_unlink,		"unlink"	}, /* 10 */
 	{ 3,	TF|TP,	sys_execve,		"execve"	}, /* 11 */
 	{ 1,	TF,	sys_chdir,		"chdir"		}, /* 12 */
-	{ 8,	0,	printargs,		"SYS_13"	}, /* 13 */
+	{ 1,	0,	sys_time,		"time"		}, /* 13 */
 	{ 3,	TF,	sys_mknod,		"mknod"		}, /* 14 */
 	{ 2,	TF,	sys_chmod,		"chmod"		}, /* 15 */
 	{ 3,	TF,	sys_chown,		"lchown"	}, /* 16 */
@@ -55,8 +55,8 @@
 	{ 4,	0,	sys_ptrace,		"ptrace"	}, /* 26 */
 	{ 1,	0,	sys_alarm,		"alarm"		}, /* 27 */
 	{ 8,	0,	printargs,		"SYS_28"	}, /* 28 */
-	{ 8,	0,	printargs,		"SYS_29"	}, /* 29 */
-	{ 8,	0,	printargs,		"SYS_30"	}, /* 30 */
+	{ 0,	TS,	sys_pause,		"pause"		}, /* 29 */
+	{ 2,	TF,	sys_utime,		"utime"		}, /* 30 */
 	{ 8,	0,	printargs,		"SYS_31"	}, /* 31 */
 	{ 8,	0,	printargs,		"SYS_32"	}, /* 32 */
 	{ 2,	TF,	sys_access,		"access"	}, /* 33 */
@@ -93,7 +93,7 @@
 	{ 0,	0,	sys_getppid,		"getppid"	}, /* 64 */
 	{ 0,	0,	sys_getpgrp,		"getpgrp"	}, /* 65 */
 	{ 0,	0,	sys_setsid,		"setsid"	}, /* 66 */
-	{ 8,	0,	printargs,		"SYS_67"	}, /* 67 */
+	{ 3,	TS,	sys_sigaction,		"sigaction"	}, /* 67 */
 	{ 8,	0,	printargs,		"SYS_68"	}, /* 68 */
 	{ 8,	0,	printargs,		"SYS_69"	}, /* 69 */
 	{ 2,	0,	sys_setreuid,		"setreuid"	}, /* 70 */
@@ -108,7 +108,7 @@
 	{ 2,	0,	sys_settimeofday,	"settimeofday"	}, /* 79 */
 	{ 2,	0,	sys_getgroups,		"getgroups"	}, /* 80 */
 	{ 2,	0,	sys_setgroups,		"setgroups"	}, /* 81 */
-	{ 8,	0,	printargs,		"SYS_82"	}, /* 82 */
+	{ 1,	0,	sys_oldselect,		"oldselect"	}, /* 82 */
 	{ 2,	TF,	sys_symlink,		"symlink"	}, /* 83 */
 	{ 8,	0,	printargs,		"SYS_84"	}, /* 84 */
 	{ 3,	TF,	sys_readlink,		"readlink"	}, /* 85 */
@@ -215,18 +215,18 @@
 	{ 2,	0,	sys_capset,		"capset"	}, /* 185 */
 	{ 2,	TS,	sys_sigaltstack,	"sigaltstack"	}, /* 186 */
 	{ 4,	TF,	sys_sendfile,		"sendfile"	}, /* 187 */
-	{ 5,	0,	printargs,		"SYS_188"	}, /* 188 */
-	{ 5,	0,	printargs,		"SYS_189"	}, /* 189 */
+	{ 8,	0,	printargs,		"SYS_188"	}, /* 188 */
+	{ 8,	0,	printargs,		"SYS_189"	}, /* 189 */
 	{ 0,	TP,	sys_vfork,		"vfork"		}, /* 190 */
-	{ 5,	0,	printargs,		"getrlimit"	}, /* 191 */
-	{ 6,	0,	sys_mmap,		"mmap2"		}, /* 192 */
-	{ 5,	0,	printargs,		"truncate64"	}, /* 193 */
-	{ 5,	0,	printargs,		"ftruncate64"	}, /* 194 */
-	{ 2,	TF,	sys_stat64,		"stat64"	}, /* 195 */
-	{ 2,	TF,	sys_lstat64,		"lstat64"	}, /* 196 */
-	{ 2,	TF,	sys_fstat64,		"fstat64"	}, /* 197 */
-	{ 5,	0,	printargs,		"SYS_198"	}, /* 198 */
-	{ 5,	0,	printargs,		"SYS_199"	}, /* 199 */
+	{ 8,	0,	printargs,		"SYS_191"	}, /* 191 */
+	{ 8,	0,	printargs,		"SYS_192"	}, /* 192 */
+	{ 8,	0,	printargs,		"SYS_193"	}, /* 193 */
+	{ 8,	0,	printargs,		"SYS_194"	}, /* 194 */
+	{ 8,	0,	printargs,		"SYS_195"	}, /* 195 */
+	{ 8,	0,	printargs,		"SYS_196"	}, /* 196 */
+	{ 8,	0,	printargs,		"SYS_197"	}, /* 197 */
+	{ 8,	0,	printargs,		"SYS_198"	}, /* 198 */
+	{ 8,	0,	printargs,		"SYS_199"	}, /* 199 */
 
 	{ 4,	0,	printargs,		"ipc_subcall"	}, /* 200 */
 	{ 4,	TI,	sys_semop,		"semop"		}, /* 201 */
@@ -1240,11 +1240,11 @@
 	{ 2,	TF,	sys_pivotroot,		"pivot_root"	}, /* 1207 */
 	{ 3,	0,	printargs,		"mincore"	}, /* 1208 */
 	{ 3,	0,	sys_madvise,		"madvise"	}, /* 1209 */
-	{ 8,	0,	printargs,		"SYS_1210"	}, /* 1210 */
-	{ 8,	0,	printargs,		"SYS_1211"	}, /* 1211 */
-	{ 8,	0,	printargs,		"SYS_1212"	}, /* 1212 */
-	{ 8,	0,	printargs,		"SYS_1213"	}, /* 1213 */
-	{ 8,	0,	printargs,		"SYS_1214"	}, /* 1214 */
+	{ 2,	TF,	sys_stat,		"stat"		}, /* 1210 */
+	{ 2,	0,	sys_lstat,		"lstat"		}, /* 1211 */
+	{ 2,	TF,	sys_fstat,		"fstat"		}, /* 1212 */
+	{ 2,	TP,	sys_clone2,		"clone2"	}, /* 1213 */
+	{ 3,	0,	printargs,		"getdents64"	}, /* 1214 */
 	{ 8,	0,	printargs,		"SYS_1215"	}, /* 1215 */
 	{ 8,	0,	printargs,		"SYS_1216"	}, /* 1216 */
 	{ 8,	0,	printargs,		"SYS_1217"	}, /* 1217 */

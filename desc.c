@@ -114,7 +114,16 @@ long addr;
 int getlk;
 {
 	struct flock fl;
+#ifdef	IA64
+	extern long ia32;
 
+	if (ia32) {
+		if (xlate_flock(tcp, addr, &fl)) {
+			tprintf("{...}");
+			return;
+		}
+	} else
+#endif	// IA64
 	if (umove(tcp, addr, &fl) < 0) {
 		tprintf("{...}");
 		return;

@@ -64,7 +64,7 @@
 #endif /* !IA64 */
 
 #ifdef HAVE_ASM_SIGCONTEXT_H
-#ifndef	IA64
+#if !(defined(IA64) && defined(_SIGNAL_H) && defined(__USE_BSD))
 #include <asm/sigcontext.h>
 #endif	/* ia64 */
 #ifdef SPARC

@@ -687,6 +687,9 @@ struct tcb *tcp;
 long addr;
 {
 	struct stat statbuf;
+#ifdef	IA64
+	extern long ia32;
+#endif	// IA64
 
 #ifdef LINUXSPARC
  	if (current_personality == 1) {
@@ -703,6 +706,14 @@ long addr;
 		tprintf("%#lx", addr);
 		return;
 	}
+#ifdef	IA64
+	if (ia32) {
+		if (xlate_stat(tcp, addr, &statbuf)) {
+			tprintf("{...}");
+			return;
+		}
+	} else
+#endif	// IA64
 	if (umove(tcp, addr, &statbuf) < 0) {
 		tprintf("{...}");
 		return;
@@ -1566,6 +1577,9 @@ sys_utime(tcp)
 struct tcb *tcp;
 {
 	long ut[2];
+#ifdef	IA64
+	extern long ia32;
+#endif	// IA64
 
 	if (entering(tcp)) {
 		printpath(tcp, tcp->u_arg[0]);
@@ -1574,6 +1588,19 @@ struct tcb *tcp;
 			tprintf("NULL");
 		else if (!verbose(tcp))
 			tprintf("%#lx", tcp->u_arg[1]);
+#ifdef	IA64
+		if (ia32) {
+			int ut32[2];
+
+			if (umoven(tcp, tcp->u_arg[1], sizeof ut32,
+			    (char *) ut32) < 0)
+				tprintf("[?, ?]");
+			else {
+				tprintf("[%s,", sprinttime(ut32[0]));
+				tprintf(" %s]", sprinttime(ut32[1]));
+			}
+		}
+#endif	// IA64
 		else if (umoven(tcp, tcp->u_arg[1], sizeof ut,
 		    (char *) ut) < 0)
 			tprintf("[?, ?]");
@@ -1723,11 +1750,31 @@ struct tcb *tcp;
 	for (i = 0; i < len;) {
 		struct kernel_dirent *d = (struct kernel_dirent *) &buf[i];
 #ifdef linux
+		char *name = d->d_name;
+#ifdef	IA64
+		struct kernel_dirent32 {
+			unsigned int	d_ino;
+			unsigned int	d_off;
+			unsigned short	d_reclen;
+			char		d_name[1];
+		} *dp;
+		struct kernel_dirent dbuf;
+		extern long ia32;
+
+		if (ia32) {
+			dp = (struct kernel_dirent32 *)d;
+			d = &dbuf;
+			d->d_ino = dp->d_ino;
+			d->d_off = dp->d_off;
+			d->d_reclen = dp->d_reclen;
+			name = dp->d_name;
+		}
+#endif	// IA64
 		if (!abbrev(tcp)) {
 			tprintf("%s{d_ino=%lu, d_off=%lu, ",
 				i ? " " : "", d->d_ino, d->d_off);
 			tprintf("d_reclen=%u, d_name=\"%s\"}",
-				d->d_reclen, d->d_name);
+				d->d_reclen, name);
 		}
 #endif /* linux */
 #ifdef SVR4

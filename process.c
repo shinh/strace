@@ -423,6 +423,21 @@ struct tcb *tcp;
 	return 0;
 }
 
+#ifdef __ia64__
+int
+sys_clone2(tcp)
+struct tcb *tcp;
+{
+       if (exiting(tcp)) {
+               tprintf("child_stack=%#lx, child_stack_top=%lx, flags=",
+                       tcp->u_arg[1], tcp->u_arg[2]);
+               if (printflags(clone_flags, tcp->u_arg[0]) == 0)
+                       tprintf("0");
+       }
+       return 0;
+}
+#endif
+
 #endif
 
 int
@@ -474,6 +489,10 @@ int new;
 #elif defined(ALPHA)
 	if (ptrace(PTRACE_POKEUSER, tcp->pid, (char*)(REG_A3), new)<0)
 	    	return -1;
+	return 0;
+#elif defined(IA64)
+	if (ptrace(PTRACE_POKEUSER, tcp->pid, (char*)(PT_R15), new)<0)
+		return -1;
 	return 0;
 #else
 #warning Do not know how to handle change_syscall for this architecture
@@ -531,7 +550,7 @@ setarg(tcp, argnum)
 	return 0;
 }
 
-#ifdef SYS_clone
+#if defined(SYS_clone) || defined(SYS_clone2)
 int
 internal_clone(tcp)
 struct tcb *tcp;
@@ -586,6 +605,7 @@ struct tcb *tcp;
 				sizeof tcpchild->inst);
 		}
 		newoutf(tcpchild);
+		tcpchild->parent = tcp;
 		tcp->nchildren++;
 		if (!qflag)
 			fprintf(stderr, "Process %d attached\n", pid);

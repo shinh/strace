@@ -568,10 +568,17 @@ struct tcb *tcp;
 #ifdef SYS_vfork
 	case SYS_vfork:
 #endif
+#if defined(SYS_fork) || defined(SYS_vfork)
 		internal_fork(tcp);
 		break;
+#endif
 #ifdef SYS_clone
 	case SYS_clone:
+		internal_clone(tcp);
+		break;
+#endif
+#ifdef SYS_clone2
+	case SYS_clone2:
 		internal_clone(tcp);
 		break;
 #endif
@@ -857,6 +864,12 @@ struct tcb *tcp;
 #ifdef SYS_vfork
 			    || scno == SYS_vfork
 #endif /* SYS_vfork */
+#if defined(__ia64__) && defined(SYS_clone)
+			    || scno == SYS_clone
+#endif
+#if defined(__ia64__) && defined(SYS_clone2)
+			    || scno == SYS_clone2
+#endif
 			    ) {
 				/* We are returning in the child, fake it. */
 				tcp->status.PR_WHY = PR_SYSENTRY;
@@ -936,6 +949,16 @@ struct tcb *tcp;
 	if ( 0 && r0 != -ENOSYS && !(tcp->flags & TCB_INSYSCALL)) {
 		if (debug)
 			fprintf(stderr, "stray syscall exit: d0 = %ld\n", r0);
+		return 0;
+	}
+#elif defined(IA64)
+	if (upeek(pid, PT_R10, &r10) < 0)
+		return -1;
+	if (upeek(pid, PT_R8, &r8) < 0)
+		return -1;
+	if (r10 && r8 == -ENOSYS && !(tcp->flags & TCB_INSYSCALL)) {
+		if (debug)
+			fprintf(stderr, "stray syscall exit: r8 = %ld\n", r8);
 		return 0;
 	}
 #else

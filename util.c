@@ -1494,3 +1494,73 @@ err:
 }
 
 #endif /* SUNOS4 */
+
+#ifdef	IA64
+int xlate_flock(tcp, addr, flp)
+struct tcb *tcp;
+long addr;
+struct flock *flp;
+{
+	struct flock32 {
+		unsigned short l_type;
+		unsigned short l_whence;
+		unsigned int l_start;
+		unsigned int l_len;
+		unsigned int l_pid;
+	} fl32;
+
+	if (umove(tcp, addr, &fl32) < 0)
+		return(1);
+	flp->l_type = fl32.l_type;
+	flp->l_whence = fl32.l_whence;
+	flp->l_start = fl32.l_start;
+	flp->l_len = fl32.l_len;
+	flp->l_pid = fl32.l_pid;
+	return(0);
+}
+
+int xlate_stat(tcp, addr, sbp)
+struct tcb *tcp;
+long addr;
+struct stat *sbp;
+{
+	struct stat32 {
+		unsigned short	st_dev;
+		unsigned short	_pad1;
+		unsigned int	st_ino;
+		unsigned short	st_mode;
+		unsigned short	st_nlink;
+		unsigned short	st_uid;
+		unsigned short	st_gid;
+		unsigned short	st_rdev;
+		unsigned short	_pad2;
+		unsigned int	st_size;
+		unsigned int	st_blksize;
+		unsigned int	st_blocks;
+		unsigned int	st_atime;
+		unsigned int	_unused1;
+		unsigned int	st_mtime;
+		unsigned int	_unused2;
+		unsigned int	st_ctime;
+		unsigned int	_unused3;
+		unsigned int	_unused4;
+		unsigned int	_unused5;
+	} sbuf32;
+
+	if (umove(tcp, addr, &sbuf32) < 0)
+		return(1);
+	sbp->st_ino = sbuf32.st_ino;
+	sbp->st_mode = sbuf32.st_mode;
+	sbp->st_nlink = sbuf32.st_nlink;
+	sbp->st_uid = sbuf32.st_uid;
+	sbp->st_gid = sbuf32.st_gid;
+	sbp->st_rdev = sbuf32.st_rdev;
+	sbp->st_size = sbuf32.st_size;
+	sbp->st_blksize = sbuf32.st_blksize;
+	sbp->st_blocks = sbuf32.st_blocks;
+	sbp->st_atime = sbuf32.st_atime;
+	sbp->st_mtime = sbuf32.st_mtime;
+	sbp->st_ctime = sbuf32.st_ctime;
+	return(0);
+}
+#endif	// IA64
