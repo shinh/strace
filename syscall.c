@@ -597,6 +597,9 @@ struct tcb *tcp;
 #ifdef SYS_wait4
 	case SYS_wait4:
 #endif
+#ifdef SYS32_wait4
+	case SYS32_wait4:
+#endif
 #ifdef SYS_waitpid
 	case SYS_waitpid:
 #endif
@@ -608,6 +611,9 @@ struct tcb *tcp;
 
 #ifdef SYS_exit
 	case SYS_exit:
+#endif
+#ifdef SYS32_exit
+	case SYS32_exit:
 #endif
 		internal_exit(tcp);
 		break;

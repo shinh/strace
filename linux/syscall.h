@@ -214,6 +214,21 @@ int sys_shmat(), sys_shmdt(), sys_shmget(), sys_shmctl();
 #define SYS_ipc_nsubcalls	25
 #endif /* !(ALPHA || MIPS) */
 
+#if !defined(ALPHA) && !defined(MIPS) && !defined(SPARC)
+#ifdef	IA64
+/*
+ *  IA64 syscall numbers (the only ones available from standard
+ *    header files) are disjoint from IA32 syscall numbers.  We
+ *    need to define some IA32 specific syscalls here.
+ */
+#define SYS_fork	2
+#define SYS_vfork	190
+#define SYS32_exit	1
+#define SYS_waitpid	7
+#define SYS32_wait4	114
+#endif /* IA64 */
+#endif /* !(ALPHA || MIPS) */
+
 #if defined(ALPHA) || defined(IA64)
 int sys_getpagesize();
 #endif

@@ -108,6 +108,10 @@ static _hack_syscall5(int,_ptrace,int,__request,int,__pid,int,__addr,int,__data,
 
 #endif
 
+#ifdef	IA64
+extern long ia32;
+#endif	// IA64
+
 /* macros */
 #ifndef MAX
 #define MAX(a,b)		(((a) > (b)) ? (a) : (b))
@@ -1061,6 +1065,28 @@ struct tcb *tcp;
 
 #else /* !SPARC */
 #ifdef IA64
+	if (ia32) {
+#define LOOP	0x0000feeb
+		if (tcp->flags & TCB_BPTSET) {
+			fprintf(stderr, "PANIC: bpt already set in pid %u\n", tcp->pid);
+			return -1;
+		}
+		if (upeek(tcp->pid, PT_CR_IIP, &tcp->baddr) < 0)
+			return -1;
+		if (debug)
+			fprintf(stderr, "[%d] setting bpt at %lx\n", tcp->pid, tcp->baddr);
+		tcp->inst[0] = ptrace(PTRACE_PEEKTEXT, tcp->pid, (char *) tcp->baddr, 0);
+		if (errno) {
+			perror("setbpt: ptrace(PTRACE_PEEKTEXT, ...)");
+			return -1;
+		}
+		ptrace(PTRACE_POKETEXT, tcp->pid, (char *) tcp->baddr, LOOP);
+		if (errno) {
+			perror("setbpt: ptrace(PTRACE_POKETEXT, ...)");
+			return -1;
+		}
+		tcp->flags |= TCB_BPTSET;
+	} else {
 	/*
 	 * Our strategy here is to replace the bundle that contained
 	 * the clone() syscall with a bundle of the form:
@@ -1070,7 +1096,6 @@ struct tcb *tcp;
 	 * This ensures that the newly forked child will loop
 	 * endlessly until we've got a chance to attach to it.
 	 */
-	{
 #		define LOOP0	0x0000100000000017
 #		define LOOP1	0x4000000000200000
 		unsigned long addr, ipsr;
@@ -1245,7 +1270,34 @@ struct tcb *tcp;
 	}
 	tcp->flags &= ~TCB_BPTSET;
 #elif defined(IA64)
-	{
+	if (ia32) {
+		unsigned long addr;
+
+		if (debug)
+			fprintf(stderr, "[%d] clearing bpt\n", tcp->pid);
+		if (!(tcp->flags & TCB_BPTSET)) {
+			fprintf(stderr, "PANIC: TCB not set in pid %u\n", tcp->pid);
+			return -1;
+		}
+		errno = 0;
+		ptrace(PTRACE_POKETEXT, tcp->pid, (char *) tcp->baddr, tcp->inst[0]);
+		if (errno) {
+			perror("clearbtp: ptrace(PTRACE_POKETEXT, ...)");
+			return -1;
+		}
+		tcp->flags &= ~TCB_BPTSET;
+
+		if (upeek(tcp->pid, PT_CR_IIP, &addr) < 0)
+			return -1;
+		if (addr != tcp->baddr) {
+			/* The breakpoint has not been reached yet.  */
+			if (debug)
+				fprintf(stderr,
+					"NOTE: PC not at bpt (pc %#lx baddr %#lx)\n",
+						addr, tcp->baddr);
+			return 0;
+		}
+	} else {
 		unsigned long addr, ipsr;
 		pid_t pid;
 
