@@ -64,7 +64,9 @@
 #endif /* !IA64 */
 
 #ifdef HAVE_ASM_SIGCONTEXT_H
+#ifndef	IA64
 #include <asm/sigcontext.h>
+#endif	/* ia64 */
 #ifdef SPARC
 #include <asm/reg.h>
 typedef struct {
