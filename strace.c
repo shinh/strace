@@ -1590,7 +1590,7 @@ int sig;
 	}
 	else
 		catch_sigstop = 1;
-	if (catch_sigstop)
+	if (catch_sigstop) {
 		for (;;) {
 #ifdef __WALL
 			if (wait4(tcp->pid, &status, __WALL, NULL) < 0) {
@@ -1634,6 +1634,7 @@ int sig;
 			if (error < 0)
 				break;
 		}
+	}
 #endif /* LINUX */
 
 #if defined(SUNOS4)
@@ -1700,8 +1701,8 @@ cleanup()
 				"cleanup: looking at pid %u\n", tcp->pid);
 		if (tcp_last &&
 		    (!outfname || followfork < 2 || tcp_last == tcp)) {
-			tprintf(" <unfinished ...>\n");
-			tcp_last = NULL;
+			tprintf(" <unfinished ...>");
+			printtrailer();
 		}
 		if (tcp->flags & TCB_ATTACHED)
 			detach(tcp, 0);
@@ -2166,13 +2167,13 @@ trace()
 				printleader(tcp);
 				tprintf("--- %s (%s) ---",
 					signame(what), strsignal(what));
-				printtrailer(tcp);
+				printtrailer();
 #ifdef PR_INFO
 				if (tcp->status.PR_INFO.si_signo == what) {
 					printleader(tcp);
 					tprintf("    siginfo=");
 					printsiginfo(&tcp->status.PR_INFO, 1);
-					printtrailer(tcp);
+					printtrailer();
 				}
 #endif
 			}
@@ -2181,7 +2182,7 @@ trace()
 			if (!cflag && (qual_flags[what] & QUAL_FAULT)) {
 				printleader(tcp);
 				tprintf("=== FAULT %d ===", what);
-				printtrailer(tcp);
+				printtrailer();
 			}
 			break;
 #ifdef FREEBSD
@@ -2416,7 +2417,7 @@ Process %d attached (waiting for parent)\n",
 					WCOREDUMP(status) ? "(core dumped) " :
 #endif
 					"");
-				printtrailer(tcp);
+				printtrailer();
 			}
 #ifdef TCB_GROUP_EXITING
 			handle_group_exit(tcp, -1);
@@ -2533,7 +2534,7 @@ Process %d attached (waiting for parent)\n",
 				tprintf("--- %s (%s) @ %lx (%lx) ---",
 					signame(WSTOPSIG(status)),
 					strsignal(WSTOPSIG(status)), pc, addr);
-				printtrailer(tcp);
+				printtrailer();
 			}
 			if (((tcp->flags & TCB_ATTACHED) ||
 			     tcp->nclone_threads > 0) &&
@@ -2556,9 +2557,24 @@ Process %d attached (waiting for parent)\n",
 		if (interrupted)
 			return 0;
 		if (trace_syscall(tcp) < 0 && !tcp->ptrace_errno) {
-			if (tcp->flags & TCB_ATTACHED)
+			/* ptrace() failed in trace_syscall() with ESRCH.
+			 * Likely a result of process disappearing mid-flight.
+			 * Observed case: exit_group() terminating
+			 * all processes in thread group. In this case, threads
+			 * "disappear" in an unpredictable moment without any
+			 * notification to strace via wait().
+			 */
+			if (tcp->flags & TCB_ATTACHED) {
+				if (tcp_last) {
+					/* Do we have dangling line "syscall(param, param"?
+					 * Finish the line then. We cannot
+					 */
+					tcp_last->flags |= TCB_REPRINT;
+					tprintf(" <unfinished ...>");
+					printtrailer();
+				}
 				detach(tcp, 0);
-			else {
+			} else {
 				ptrace(PTRACE_KILL,
 					tcp->pid, (char *) 1, SIGTERM);
 				droptcb(tcp);
@@ -2693,8 +2709,7 @@ int col;
 }
 
 void
-printtrailer(tcp)
-struct tcb *tcp;
+printtrailer(void)
 {
 	tprintf("\n");
 	tcp_last = NULL;
@@ -2702,8 +2717,9 @@ struct tcb *tcp;
 
 #ifdef HAVE_MP_PROCFS
 
-int mp_ioctl (int fd, int cmd, void *arg, int size) {
-
+int
+mp_ioctl(int fd, int cmd, void *arg, int size)
+{
 	struct iovec iov[2];
 	int n = 1;
 
@@ -2715,7 +2731,7 @@ int mp_ioctl (int fd, int cmd, void *arg, int size) {
 		iov[1].iov_len = size;
 	}
 
-	return writev (fd, iov, n);
+	return writev(fd, iov, n);
 }
 
 #endif
