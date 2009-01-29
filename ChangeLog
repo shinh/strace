@@ -1,3 +1,12 @@
+2009-01-29  Denys Vlasenko  <dvlasenk@redhat.com>
+
+	* strace.c (newoutf): Prevent -o FILENAME overflowing the stack.
+	(startup_attach): Fix wrong pid in "Process <PID> attached".
+	(handle_group_exit): Do not consider exit to be spurious if
+	tcb has TCB_STARTUP bit set - we can attach to the task
+	right before its death, it can legitimately happen.
+	(handle_stopped_tcbs): Ditto.
+
 2009-01-26  Denys Vlasenko  <dvlasenk@redhat.com>
 
 	* process.c (printwaitn): Add comment about wait4() pid expansion.
