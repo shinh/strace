@@ -1144,8 +1144,7 @@ long *res;
 
 #if 0
 long
-getpc(tcp)
-struct tcb *tcp;
+getpc(struct tcb *tcp)
 {
 
 #ifdef LINUX
@@ -1161,6 +1160,9 @@ struct tcb *tcp;
 		return -1;
 # elif defined(ARM)
 	if (upeek(tcp, 4*15, &pc) < 0)
+		return -1;
+# elif defined(AVR32)
+	if (upeek(tcp, REG_PC, &pc) < 0)
 		return -1;
 # elif defined(BFIN)
 	if (upeek(tcp, REG_PC, &pc) < 0)
@@ -1338,6 +1340,14 @@ printcall(struct tcb *tcp)
 
 	if (upeek(tcp, 4*15, &pc) < 0) {
 		PRINTBADPC;
+		return;
+	}
+	tprintf("[%08lx] ", pc);
+# elif defined(AVR32)
+	long pc;
+
+	if (upeek(tcp, REG_PC, &pc) < 0) {
+		tprintf("[????????] ");
 		return;
 	}
 	tprintf("[%08lx] ", pc);
@@ -1551,6 +1561,9 @@ typedef struct regs arg_setup_state;
 #   elif defined (ALPHA) || defined (MIPS)
 #    define arg0_offset	REG_A0
 #    define arg1_offset	(REG_A0+1)
+#   elif defined (AVR32)
+#    define arg0_offset	(REG_R12)
+#    define arg1_offset	(REG_R11)
 #   elif defined (POWERPC)
 #    define arg0_offset	(sizeof(unsigned long)*PT_R3)
 #    define arg1_offset	(sizeof(unsigned long)*PT_R4)
@@ -1684,7 +1697,7 @@ setbpt(struct tcb *tcp)
 				 & ~(tcp->u_arg[arg0_index] & CLONE_VFORK
 				     ? CLONE_VFORK | CLONE_VM : 0)) < 0
 		    || arg_finish_change (tcp, &state) < 0))
-		    return -1;
+			return -1;
 		tcp->flags |= TCB_BPTSET;
 		tcp->inst[0] = tcp->u_arg[arg0_index];
 		tcp->inst[1] = tcp->u_arg[arg1_index];
@@ -1878,7 +1891,7 @@ struct tcb *tcp;
 		return -1;
 #     elif defined (M68K)
 	if (upeek(tcp, 4*PT_PC, &tcp->baddr) < 0)
-	  return -1;
+		return -1;
 #     elif defined (ALPHA)
 	return -1;
 #     elif defined (ARM)
