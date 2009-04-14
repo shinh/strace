@@ -1874,8 +1874,7 @@ struct new_sigaction
 
 
 int
-sys_rt_sigaction(tcp)
-	struct tcb *tcp;
+sys_rt_sigaction(struct tcb *tcp)
 {
 	struct new_sigaction sa;
 	sigset_t sigset;
@@ -1935,9 +1934,8 @@ sys_rt_sigaction(tcp)
 	return 0;
 }
 
-	int
-sys_rt_sigpending(tcp)
-	struct tcb *tcp;
+int
+sys_rt_sigpending(struct tcb *tcp)
 {
 	sigset_t sigset;
 
@@ -1952,9 +1950,9 @@ sys_rt_sigpending(tcp)
 	}
 	return 0;
 }
-	int
-sys_rt_sigsuspend(tcp)
-	struct tcb *tcp;
+
+int
+sys_rt_sigsuspend(struct tcb *tcp)
 {
 	if (entering(tcp)) {
 		sigset_t sigm;
@@ -1965,9 +1963,9 @@ sys_rt_sigsuspend(tcp)
 	}
 	return 0;
 }
-	int
-sys_rt_sigqueueinfo(tcp)
-	struct tcb *tcp;
+
+int
+sys_rt_sigqueueinfo(struct tcb *tcp)
 {
 	if (entering(tcp)) {
 		siginfo_t si;
@@ -1982,8 +1980,7 @@ sys_rt_sigqueueinfo(tcp)
 	return 0;
 }
 
-int sys_rt_sigtimedwait(tcp)
-	struct tcb *tcp;
+int sys_rt_sigtimedwait(struct tcb *tcp)
 {
 	if (entering(tcp)) {
 		sigset_t sigset;
@@ -2013,8 +2010,7 @@ int sys_rt_sigtimedwait(tcp)
 };
 
 int
-sys_restart_syscall(tcp)
-struct tcb *tcp;
+sys_restart_syscall(struct tcb *tcp)
 {
 	if (entering(tcp))
 		tprintf("<... resuming interrupted call ...>");
