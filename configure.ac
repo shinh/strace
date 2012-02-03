@@ -335,5 +335,20 @@ AC_CACHE_CHECK([for BLKGETSIZE64], [ac_cv_have_blkgetsize64],
 
 AC_PATH_PROG([PERL], [perl])
 
+AC_ARG_WITH([selinux],
+  AS_HELP_STRING([--without-selinux],
+    [do not use SELinux library (default: use it if available)]),
+    [use_selinux=$withval],
+    [use_selinux=auto])
+
+if test "x$use_selinux" != xno; then
+  AC_CHECK_LIB([selinux], [is_selinux_enabled])
+  if test "x$use_selinux" = xyes; then
+    if test "x$ac_cv_lib_selinux_is_selinux_enabled" != xyes; then
+      AC_MSG_ERROR([SELinux library was not found or not usable])
+    fi
+  fi
+fi
+
 AC_CONFIG_FILES([Makefile tests/Makefile])
 AC_OUTPUT

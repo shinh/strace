@@ -839,6 +839,32 @@ static void kill_save_errno(pid_t pid, int sig)
 	errno = saved_errno;
 }
 
+#ifdef HAVE_LIBSELINUX
+# include <selinux/selinux.h>
+#endif
+
+static void show_security_policy_diagnostics(void) {
+	if (errno != EACCES && errno != EPERM)
+		return;
+
+#ifdef HAVE_LIBSELINUX
+	if ((is_selinux_enabled() > 0)
+	    && (security_get_boolean_active("deny_ptrace") == 1)) {
+		fprintf(stderr,
+			"The SELinux boolean 'deny_ptrace' is enabled, preventing arbitrary processes\n"
+			"from snooping on each other (as a layered defense against intruders).\n"
+			"This protection can be disabled by running the following shell command as root:\n"
+			"\tsetsebool deny_ptrace 0\n"
+			"See https://fedoraproject.org/wiki/Features/SELinuxDenyPtrace for more information.\n");
+		return;
+	}
+#endif
+	fprintf(stderr,
+		"A kernel security policy that disallows ptrace syscalls, preventing arbitrary\n"
+		"processes from snooping on each other as a layered defense against intruders,\n"
+		"seems to be in effect.\n");
+}
+
 /*
  * Test whether the kernel support PTRACE_O_TRACECLONE et al options.
  * First fork a new child, call ptrace with PTRACE_SETOPTIONS on it,
@@ -857,9 +883,12 @@ test_ptrace_setoptions_followfork(void)
 		perror_msg_and_die("fork");
 	if (pid == 0) {
 		pid = getpid();
-		if (ptrace(PTRACE_TRACEME, 0L, 0L, 0L) < 0)
-			perror_msg_and_die("%s: PTRACE_TRACEME doesn't work",
-					   __func__);
+		if (ptrace(PTRACE_TRACEME, 0L, 0L, 0L) < 0) {
+			perror_msg("%s: PTRACE_TRACEME doesn't work",
+				   __func__);
+			show_security_policy_diagnostics();
+			die();
+		}
 		kill(pid, SIGSTOP);
 		if (fork() < 0)
 			perror_msg_and_die("fork");
@@ -971,10 +1000,13 @@ test_ptrace_setoptions_for_all(void)
 
 	if (pid == 0) {
 		pid = getpid();
-		if (ptrace(PTRACE_TRACEME, 0L, 0L, 0L) < 0)
+		if (ptrace(PTRACE_TRACEME, 0L, 0L, 0L) < 0) {
+			perror_msg("%s: PTRACE_TRACEME doesn't work",
+				   __func__);
+			show_security_policy_diagnostics();
 			/* Note: exits with exitcode 1 */
-			perror_msg_and_die("%s: PTRACE_TRACEME doesn't work",
-					   __func__);
+			die();
+		}
 		kill(pid, SIGSTOP);
 		_exit(0); /* parent should see entry into this syscall */
 	}
