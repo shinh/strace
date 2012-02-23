@@ -31,8 +31,6 @@
  */
 #include "defs.h"
 
-#if defined(LINUX)
-
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -208,4 +206,3 @@ sys_init_module(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* LINUX */

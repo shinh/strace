@@ -34,9 +34,7 @@
 
 #include "defs.h"
 
-#ifdef LINUX
 #include <asm/mman.h>
-#endif
 #include <sys/mman.h>
 
 #if defined(LINUX) && defined(I386)
@@ -62,23 +60,8 @@ sys_brk(struct tcb *tcp)
 	if (entering(tcp)) {
 		tprintf("%#lx", tcp->u_arg[0]);
 	}
-#ifdef LINUX
-	return RVAL_HEX;
-#else
-	return 0;
-#endif
-}
-
-#if defined(FREEBSD) || defined(SUNOS4)
-int
-sys_sbrk(struct tcb *tcp)
-{
-	if (entering(tcp)) {
-		tprintf("%lu", tcp->u_arg[0]);
-	}
 	return RVAL_HEX;
 }
-#endif /* FREEBSD || SUNOS4 */
 
 static const struct xlat mmap_prot[] = {
 	{ PROT_NONE,	"PROT_NONE",	},
@@ -262,7 +245,6 @@ print_mmap(struct tcb *tcp, long *u_arg, long long offset)
 	return RVAL_HEX;
 }
 
-#ifdef LINUX
 int sys_old_mmap(struct tcb *tcp)
 {
 #if defined(IA64)
@@ -305,7 +287,6 @@ int sys_old_mmap(struct tcb *tcp)
 
 	return print_mmap(tcp, u_arg, u_arg[5]);
 }
-#endif /* LINUX */
 
 int
 sys_mmap(struct tcb *tcp)
@@ -408,8 +389,6 @@ sys_mprotect(struct tcb *tcp)
 	return 0;
 }
 
-#ifdef LINUX
-
 static const struct xlat mremap_flags[] = {
 	{ MREMAP_MAYMOVE,	"MREMAP_MAYMOVE"	},
 #ifdef MREMAP_FIXED
@@ -484,8 +463,6 @@ sys_mlockall(struct tcb *tcp)
 	return 0;
 }
 
-
-#endif /* LINUX */
 
 #ifdef MS_ASYNC
 
@@ -716,7 +693,6 @@ sys_get_thread_area(struct tcb *tcp)
 }
 #endif
 
-#if defined(LINUX)
 int
 sys_remap_file_pages(struct tcb *tcp)
 {
@@ -930,7 +906,6 @@ sys_move_pages(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif
 
 #if defined(LINUX) && defined(POWERPC)
 int
