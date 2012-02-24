@@ -6,8 +6,7 @@ bin_PROGRAMS = strace
 man_MANS = strace.1
 bin_SCRIPTS = strace-graph
 
-# OS is one of `linux', `sunos4', `svr4', or `freebsd'.
-OS		= @opsys@
+OS		= linux
 # ARCH is `i386', `m68k', `sparc', etc.
 ARCH		= @arch@
 
@@ -128,8 +127,6 @@ $(srcdir)/CREDITS: $(top_srcdir)/CREDITS.in $(top_srcdir)/.mailmap \
 
 export TAR_OPTIONS = --owner=0 --group=0 --numeric-owner --mode=go-w,go+rX
 
-if LINUX
-
 IOCTLDIR = /usr/include
 IOCTLASM = asm
 
@@ -147,9 +144,6 @@ ioctls.h: $(srcdir)/linux/ioctlent.sh
 ioctldefs.h: ioctls.h ;
 
 endif
-endif
-
-if LINUX
 
 ioctlent_h = $(builddir)/$(OS)/ioctlent.h
 BUILT_SOURCES += $(ioctlent_h)
@@ -160,5 +154,3 @@ $(ioctlent_h): $(top_builddir)/config.status $(ioctlent_h_deps)
 	cat $(ioctlent_h_deps) | \
 		$(COMPILE) -E -P - | \
 		LC_ALL=C sort -u -k3,3 -k2,2 > $@
-
-endif
