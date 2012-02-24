@@ -72,13 +72,13 @@
 # undef pt_all_user_regs
 #endif
 
-#if defined (LINUX) && defined (SPARC64)
+#ifdef SPARC64
 # define r_pc r_tpc
 # undef PTRACE_GETREGS
 # define PTRACE_GETREGS PTRACE_GETREGS64
 # undef PTRACE_SETREGS
 # define PTRACE_SETREGS PTRACE_SETREGS64
-#endif /* LINUX && SPARC64 */
+#endif /* SPARC64 */
 
 #ifdef HAVE_LINUX_FUTEX_H
 # include <linux/futex.h>
@@ -103,7 +103,7 @@
 #undef GETGROUPS32_T
 #define GETGROUPS32_T __kernel_gid32_t
 
-#if defined(LINUX) && defined(IA64)
+#ifdef IA64
 # include <asm/ptrace_offsets.h>
 # include <asm/rse.h>
 #endif
@@ -358,7 +358,7 @@ sys_sethostname(struct tcb *tcp)
 	return 0;
 }
 
-#if defined(ALPHA) || defined(FREEBSD) || defined(SUNOS4) || defined(SVR4)
+#if defined(ALPHA)
 int
 sys_gethostname(struct tcb *tcp)
 {
@@ -371,7 +371,7 @@ sys_gethostname(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* ALPHA || FREEBSD || SUNOS4 || SVR4 */
+#endif /* ALPHA */
 
 int
 sys_setdomainname(struct tcb *tcp)
@@ -1054,7 +1054,7 @@ sys_getgroups32(struct tcb *tcp)
 	return 0;
 }
 
-#if defined(ALPHA) || defined(SUNOS4) || defined(SVR4)
+#if defined(ALPHA)
 int
 sys_setpgrp(struct tcb *tcp)
 {
@@ -1063,7 +1063,7 @@ sys_setpgrp(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* ALPHA || SUNOS4 || SVR4 */
+#endif /* ALPHA */
 
 int
 sys_getpgrp(struct tcb *tcp)
@@ -1150,7 +1150,7 @@ printargc(const char *fmt, struct tcb *tcp, long addr)
 	tprintf(fmt, count, count == 1 ? "" : "s");
 }
 
-#if defined(SPARC) || defined(SPARC64) || defined(SUNOS4)
+#if defined(SPARC) || defined(SPARC64)
 int
 sys_execv(struct tcb *tcp)
 {
@@ -1166,7 +1166,7 @@ sys_execv(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* SPARC || SPARC64 || SUNOS4 */
+#endif /* SPARC || SPARC64 */
 
 int
 sys_execve(struct tcb *tcp)
@@ -1193,11 +1193,10 @@ sys_execve(struct tcb *tcp)
 	return 0;
 }
 
-#if defined SUNOS4 || (defined LINUX && defined TCB_WAITEXECVE)
+#ifdef TCB_WAITEXECVE
 int
 internal_exec(struct tcb *tcp)
 {
-# if defined LINUX && defined TCB_WAITEXECVE
 	if (exiting(tcp) && syserror(tcp))
 		tcp->flags &= ~TCB_WAITEXECVE;
 	else {
@@ -1205,7 +1204,6 @@ internal_exec(struct tcb *tcp)
 		if (!(ptrace_setoptions & PTRACE_O_TRACEEXEC))
 			tcp->flags |= TCB_WAITEXECVE; /* no */
 	}
-# endif
 	return 0;
 }
 #endif

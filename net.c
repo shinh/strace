@@ -1217,7 +1217,7 @@ printsock(struct tcb *tcp, long addr, int addrlen)
 #ifdef HAVE_INET_NTOP
 		struct sockaddr_in6 sa6;
 #endif
-#if defined(LINUX) && defined(AF_IPX)
+#ifdef AF_IPX
 		struct sockaddr_ipx sipx;
 #endif
 #ifdef AF_PACKET
@@ -1296,7 +1296,7 @@ printsock(struct tcb *tcp, long addr, int addrlen)
 #endif
 		break;
 #endif
-#if defined(AF_IPX) && defined(linux)
+#ifdef AF_IPX
 	case AF_IPX:
 		{
 			int i;
@@ -1314,7 +1314,7 @@ printsock(struct tcb *tcp, long addr, int addrlen)
 			tprintf("/[%02x]", addrbuf.sipx.sipx_type);
 		}
 		break;
-#endif /* AF_IPX && linux */
+#endif /* AF_IPX */
 #ifdef AF_PACKET
 	case AF_PACKET:
 		{
@@ -1798,17 +1798,15 @@ do_pipe(struct tcb *tcp, int flags_arg)
 		if (syserror(tcp)) {
 			tprintf("%#lx", tcp->u_arg[0]);
 		} else {
-#if defined(LINUX) && !defined(SPARC) && !defined(SPARC64) && !defined(SH) && !defined(IA64)
+#if defined(SPARC) || defined(SPARC64) || defined(SH) || defined(IA64)
+			tprintf("[%lu, %lu]", tcp->u_rval, getrval2(tcp));
+#else
 			int fds[2];
 
 			if (umoven(tcp, tcp->u_arg[0], sizeof fds, (char *) fds) < 0)
 				tprints("[...]");
 			else
 				tprintf("[%u, %u]", fds[0], fds[1]);
-#elif defined(SPARC) || defined(SPARC64) || defined(SH) || defined(SVR4) || defined(FREEBSD) || defined(IA64)
-			tprintf("[%lu, %lu]", tcp->u_rval, getrval2(tcp));
-#else
-			tprintf("%#lx", tcp->u_arg[0]);
 #endif
 		}
 		if (flags_arg >= 0) {

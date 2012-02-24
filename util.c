@@ -44,11 +44,11 @@
 #include <sys/uio.h>
 #endif
 
-#if defined(linux) && (__GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 1))
+#if defined(__GLIBC__) && (__GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 1))
 #include <linux/ptrace.h>
 #endif
 
-#if defined(LINUX) && defined(IA64)
+#ifdef IA64
 # include <asm/ptrace_offsets.h>
 # include <asm/rse.h>
 #endif
@@ -245,7 +245,7 @@ printxval(const struct xlat *xlat, int val, const char *dflt)
 int
 printllval(struct tcb *tcp, const char *format, int llarg)
 {
-# if defined LINUX && (defined X86_64 || defined POWERPC64)
+# if defined(X86_64) || defined(POWERPC64)
 	if (current_personality == 0) {
 		tprintf(format, tcp->u_arg[llarg]);
 		llarg++;
@@ -654,7 +654,7 @@ printstr(struct tcb *tcp, long addr, int len)
 void
 dumpiov(struct tcb *tcp, int len, long addr)
 {
-#if defined(LINUX) && SUPPORTED_PERSONALITIES > 1
+#if SUPPORTED_PERSONALITIES > 1
 	union {
 		struct { u_int32_t base; u_int32_t len; } *iov32;
 		struct { u_int64_t base; u_int64_t len; } *iov64;
@@ -759,7 +759,6 @@ dumpstr(struct tcb *tcp, long addr, int len)
 	}
 }
 
-
 #ifdef HAVE_PROCESS_VM_READV
 /* C library supports this, but the kernel might not. */
 static bool process_vm_readv_not_supported = 0;
@@ -796,7 +795,6 @@ static bool process_vm_readv_not_supported = 1;
 #endif
 
 #endif /* end of hack */
-
 
 #define PAGMASK	(~(PAGSIZ - 1))
 /*
@@ -1184,7 +1182,6 @@ printcall(struct tcb *tcp)
 # endif /* architecture */
 
 }
-
 
 /*
  * These #if's are huge, please indent them correctly.

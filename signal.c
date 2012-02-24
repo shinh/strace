@@ -66,12 +66,12 @@
 # include <asm/ptrace_offsets.h>
 #endif
 
-#if defined (LINUX) && defined (SPARC64)
+#ifdef SPARC64
 # undef PTRACE_GETREGS
 # define PTRACE_GETREGS PTRACE_GETREGS64
 # undef PTRACE_SETREGS
 # define PTRACE_SETREGS PTRACE_SETREGS64
-#endif /* LINUX && SPARC64 */
+#endif /* SPARC64 */
 
 #if defined (SPARC) || defined (SPARC64) || defined (MIPS)
 typedef struct {
@@ -138,7 +138,7 @@ struct sigcontext
 
 #ifdef HAVE_SIGACTION
 
-#if defined LINUX && (defined I386 || defined X86_64)
+#if defined(I386) || defined(X86_64)
 /* The libc headers do not define this constant since it should only be
    used by the implementation.  So we define it here.  */
 # ifndef SA_RESTORER
@@ -422,7 +422,7 @@ print_sigset(struct tcb *tcp, long addr, int rt)
 
 #define SI_FROMUSER(sip)	((sip)->si_code <= 0)
 
-#endif /* LINUX */
+#endif
 
 #if __GLIBC_MINOR__ < 1
 /* Type for data associated with a signal.  */
@@ -1125,7 +1125,7 @@ sys_sigsuspend(struct tcb *tcp)
 	return 0;
 }
 
-#if defined LINUX && !defined SS_ONSTACK
+#ifndef SS_ONSTACK
 #define SS_ONSTACK      1
 #define SS_DISABLE      2
 #if __GLIBC_MINOR__ == 0

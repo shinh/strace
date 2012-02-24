@@ -150,7 +150,7 @@ struct stat_sparc64 {
 #define XATTR_REPLACE 2
 #endif
 
-#if _LFS64_LARGEFILE && (defined(LINUX) || defined(SVR4))
+#if _LFS64_LARGEFILE
 # ifdef HAVE_INTTYPES_H
 #  include <inttypes.h>
 # else
@@ -826,7 +826,7 @@ printstat_sparc64(struct tcb *tcp, long addr)
 #endif /* SPARC64 */
 #endif /* LINUXSPARC */
 
-#if defined LINUX && defined POWERPC64
+#ifdef POWERPC64
 struct stat_powerpc32 {
 	unsigned int	st_dev;
 	unsigned int	st_ino;
@@ -889,7 +889,7 @@ printstat_powerpc32(struct tcb *tcp, long addr)
 	else
 		tprints("...}");
 }
-#endif /* LINUX && POWERPC64 */
+#endif /* POWERPC64 */
 
 static const struct xlat fileflags[] = {
 	{ 0,		NULL		},
@@ -989,7 +989,7 @@ printstat(struct tcb *tcp, long addr)
 #endif
 #endif /* LINUXSPARC */
 
-#if defined LINUX && defined POWERPC64
+#ifdef POWERPC64
 	if (current_personality == 1) {
 		printstat_powerpc32(tcp, addr);
 		return;
@@ -1005,7 +1005,7 @@ printstat(struct tcb *tcp, long addr)
 }
 #endif	/* !HAVE_LONG_LONG_OFF_T */
 
-#if !defined HAVE_STAT64 && defined LINUX && defined X86_64
+#if !defined(HAVE_STAT64) && defined(X86_64)
 /*
  * Linux x86_64 has unified `struct stat' but its i386 biarch needs
  * `struct stat64'.  Its <asm-i386/stat.h> definition expects 32-bit `long'.
@@ -1069,7 +1069,7 @@ printstat64(struct tcb *tcp, long addr)
 # endif
 #endif /* LINUXSPARC */
 
-#if defined LINUX && defined X86_64
+#ifdef X86_64
 	if (current_personality == 0) {
 		printstat(tcp, addr);
 		return;
@@ -1157,7 +1157,7 @@ printstat64(struct tcb *tcp, long addr)
 }
 #endif /* HAVE_STAT64 */
 
-#if defined(LINUX) && defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
+#if defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
     && !defined(HAVE_LONG_LONG_OFF_T)
 static void
 convertoldstat(const struct __old_kernel_stat *oldbuf, struct stat *newbuf)
@@ -1208,7 +1208,7 @@ printoldstat(struct tcb *tcp, long addr)
 	convertoldstat(&statbuf, &newstatbuf);
 	realprintstat(tcp, &newstatbuf);
 }
-#endif /* LINUX && !IA64 && !HPPA && !X86_64 && !S390 && !S390X */
+#endif /* !IA64 && !HPPA && !X86_64 && !S390 && !S390X */
 
 #ifndef HAVE_LONG_LONG_OFF_T
 int
@@ -1273,7 +1273,7 @@ sys_newfstatat(struct tcb *tcp)
 	return 0;
 }
 
-#if defined(LINUX) && defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
+#if defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
     && !defined(HAVE_LONG_LONG_OFF_T)
 int
 sys_oldstat(struct tcb *tcp)
@@ -1286,7 +1286,7 @@ sys_oldstat(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* LINUX && HAVE_STRUCT___OLD_KERNEL_STAT */
+#endif /* HAVE_STRUCT___OLD_KERNEL_STAT */
 
 #ifndef HAVE_LONG_LONG_OFF_T
 int
@@ -1318,7 +1318,7 @@ sys_fstat64(struct tcb *tcp)
 #endif
 }
 
-#if defined(LINUX) && defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
+#if defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
     && !defined(HAVE_LONG_LONG_OFF_T)
 int
 sys_oldfstat(struct tcb *tcp)
@@ -1331,7 +1331,7 @@ sys_oldfstat(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* LINUX && HAVE_STRUCT___OLD_KERNEL_STAT */
+#endif /* HAVE_STRUCT___OLD_KERNEL_STAT */
 
 #ifndef HAVE_LONG_LONG_OFF_T
 int
@@ -1363,7 +1363,7 @@ sys_lstat64(struct tcb *tcp)
 #endif
 }
 
-#if defined(LINUX) && defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
+#if defined(HAVE_STRUCT___OLD_KERNEL_STAT) \
     && !defined(HAVE_LONG_LONG_OFF_T)
 int
 sys_oldlstat(struct tcb *tcp)
@@ -1376,10 +1376,10 @@ sys_oldlstat(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* LINUX && HAVE_STRUCT___OLD_KERNEL_STAT */
+#endif /* HAVE_STRUCT___OLD_KERNEL_STAT */
 
 
-#if defined(SVR4) || defined(LINUXSPARC)
+#if defined(LINUXSPARC)
 
 int
 sys_xstat(struct tcb *tcp)
@@ -1564,7 +1564,7 @@ sys_aclipc(struct tcb *tcp)
 
 #endif /* HAVE_SYS_ACL_H */
 
-#endif /* SVR4 || LINUXSPARC */
+#endif /* LINUXSPARC */
 
 static const struct xlat fsmagic[] = {
 	{ 0x73757245,	"CODA_SUPER_MAGIC"	},
@@ -1679,7 +1679,7 @@ sys_fstatfs(struct tcb *tcp)
 	return 0;
 }
 
-#if defined LINUX && defined HAVE_STATFS64
+#ifdef HAVE_STATFS64
 static void
 printstatfs64(struct tcb *tcp, long addr)
 {
@@ -1796,7 +1796,7 @@ sys_fstatfs64(struct tcb *tcp)
 }
 #endif
 
-#if defined(LINUX) && defined(__alpha)
+#ifdef __alpha
 
 int
 osf_statfs(struct tcb *tcp)
@@ -1822,7 +1822,7 @@ osf_fstatfs(struct tcb *tcp)
 	}
 	return 0;
 }
-#endif /* LINUX && __alpha */
+#endif /* __alpha */
 
 /* directory */
 int
