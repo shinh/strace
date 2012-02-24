@@ -1,17 +1,14 @@
 This is strace, a system call tracer for Linux.
+
 strace is released under a Berkeley-style license at the request
 of Paul Kranenburg; see the file COPYRIGHT for details.
 
-Read the INSTALL file for generic instructions on how to install
-strace.  If configure cannot guess your system configuration, you can
-specify it on the command line after the other options like this:
+See the file CREDITS for a list of authors and other contributors.
 
-	./configure --prefix=/usr i486-linux
+See the file INSTALL for compilation and installation instructions.
 
 See the file NEWS for information on what has changed in recent
 versions.
-
-See the file CREDITS to see who has contributed to strace.
 
 You can get the latest version of strace from its homepage at
 http://sourceforge.net/projects/strace/ .
