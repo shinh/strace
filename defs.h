@@ -545,7 +545,6 @@ extern int ioctl_decode(struct tcb *, long, long);
 extern int term_ioctl(struct tcb *, long, long);
 extern int sock_ioctl(struct tcb *, long, long);
 extern int proc_ioctl(struct tcb *, int, int);
-extern int stream_ioctl(struct tcb *, int, int);
 extern int rtc_ioctl(struct tcb *, long, long);
 extern int scsi_ioctl(struct tcb *, long, long);
 extern int block_ioctl(struct tcb *, long, long);

@@ -119,7 +119,6 @@ gl_WARN_ADD([-Wwrite-strings])
 AC_SUBST([WARN_CFLAGS])
 
 AC_PROG_CPP
-AC_PROG_GCC_TRADITIONAL
 AC_PROG_INSTALL
 AC_C_CONST
 AC_C_BIGENDIAN
@@ -157,12 +156,9 @@ AC_CHECK_TYPES([struct t_opthdr],,, [#include <sys/tiuser.h>])
 
 AC_CHECK_FUNCS([ \
 	fork \
-	getdents \
 	if_indextoname \
 	inet_ntop \
-	mctl \
 	prctl \
-	pread \
 	sendmsg \
 	sigaction \
 	strerror \
@@ -179,23 +175,15 @@ AC_CHECK_HEADERS([ \
 	mqueue.h \
 	poll.h \
 	stropts.h \
-	termio.h \
 	sys/acl.h \
-	sys/aio.h \
 	sys/asynch.h \
 	sys/conf.h \
-	sys/door.h \
 	sys/epoll.h \
 	sys/filio.h \
 	sys/ioctl.h \
-	sys/nscsys.h \
 	sys/poll.h \
 	sys/ptrace.h \
 	sys/reg.h \
-	sys/stream.h \
-	sys/sysconfig.h \
-	sys/tihdr.h \
-	sys/tiuser.h \
 	sys/uio.h \
 	sys/vfs.h \
 	asm/cachectl.h \
