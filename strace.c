@@ -43,6 +43,9 @@
 #ifdef HAVE_PRCTL
 # include <sys/prctl.h>
 #endif
+#ifdef USE_SECCOMP
+# include <seccomp.h>
+#endif
 
 #include "ptrace.h"
 #include "printsiginfo.h"
@@ -55,6 +58,9 @@ extern char *optarg;
 #ifdef USE_LIBUNWIND
 /* if this is true do the stack trace for every system call */
 bool stack_trace_enabled = false;
+#endif
+#ifdef USE_SECCOMP
+bool use_seccomp = false;
 #endif
 
 #if defined __NR_tkill
@@ -1186,6 +1192,34 @@ exec_or_die(void)
 		alarm(0);
 	}
 
+#ifdef USE_SECCOMP
+	if (use_seccomp) {
+		scmp_filter_ctx sctx = seccomp_init(SCMP_ACT_ALLOW);
+		unsigned i;
+		for (i = 0; i < num_quals; i++) {
+			if (qual_flags[i] & QUAL_TRACE) {
+				if (seccomp_rule_add(sctx, SCMP_ACT_TRACE(42), i, 0) < 0) {
+					perror_msg_and_die("seccomp_rule_add");
+				}
+			}
+		}
+		if (seccomp_arch_add(sctx, AUDIT_ARCH_I386) < 0)
+			perror_msg_and_die("seccomp_arch_add");
+		for (i = 0; i < num_quals; i++) {
+			if (qual_vec[1][i] & QUAL_TRACE) {
+				// TODO: hmm why.
+				if (i >= 323)
+					break;
+				if (seccomp_rule_add(sctx, SCMP_ACT_TRACE(42), i, 0) < 0) {
+					fprintf(stderr, "FF %d\n", i);
+					perror_msg_and_die("seccomp_rule_add");
+				}
+			}
+		}
+		if (seccomp_load(sctx) < 0)
+			perror_msg_and_die("seccomp_load");
+	}
+#endif
 	execv(params->pathname, params->argv);
 	perror_msg_and_die("exec");
 }
@@ -1288,6 +1322,9 @@ startup_child(char **argv)
 		prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY);
 #endif
 
+#ifdef USE_SECCOMP
+	use_seccomp = true;
+#endif
 	pid = fork();
 	if (pid < 0) {
 		perror_msg_and_die("fork");
@@ -1717,6 +1754,9 @@ init(int argc, char *argv[])
 		ptrace_setoptions |= PTRACE_O_TRACECLONE |
 				     PTRACE_O_TRACEFORK |
 				     PTRACE_O_TRACEVFORK;
+#if USE_SECCOMP
+	ptrace_setoptions |= PTRACE_O_TRACESECCOMP;
+#endif
 	if (debug_flag)
 		error_msg("ptrace_setoptions = %#x", ptrace_setoptions);
 	test_ptrace_seize();
@@ -2107,6 +2147,7 @@ trace(void)
 	unsigned int event;
 	struct tcb *tcp;
 	struct rusage ru;
+	int ptrace_restart_cmd = PTRACE_SYSCALL;
 
 	if (interrupted)
 		return false;
@@ -2241,6 +2282,12 @@ trace(void)
 	}
 
 	sig = WSTOPSIG(status);
+#ifdef USE_SECCOMP
+	if (use_seccomp &&
+		(status >> 8) == (SIGTRAP | (PTRACE_EVENT_SECCOMP << 8))) {
+		goto restart_tracee_todo_rename;
+	}
+#endif
 
 	if (event != 0) {
 		/* Ptrace event */
@@ -2322,6 +2369,7 @@ show_stopsig:
 	 * This should be syscall entry or exit.
 	 * Handle it.
 	 */
+	//fprintf(stderr, "before trace flag %d\n", tcp->flags);
 	if (trace_syscall(tcp) < 0) {
 		/*
 		 * ptrace() failed in trace_syscall().
@@ -2341,7 +2389,12 @@ restart_tracee_with_sig_0:
 	sig = 0;
 
 restart_tracee:
-	if (ptrace_restart(PTRACE_SYSCALL, tcp, sig) < 0) {
+#ifdef USE_SECCOMP
+	if (use_seccomp && !hide_log_until_execve && sig == 0 && entering(tcp))
+		ptrace_restart_cmd = PTRACE_CONT;
+restart_tracee_todo_rename:
+#endif
+	if (ptrace_restart(ptrace_restart_cmd, tcp, sig) < 0) {
 		/* Note: ptrace_restart emitted error message */
 		exit_code = 1;
 		return false;

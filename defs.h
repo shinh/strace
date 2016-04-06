@@ -134,6 +134,8 @@ extern char *stpcpy(char *dst, const char *src);
  * Thus disabled by default.
  */
 #define USE_CUSTOM_PRINTF 0
+/* TODO: autotoolize. */
+#define USE_SECCOMP 1
 
 #ifndef ERESTARTSYS
 # define ERESTARTSYS    512
@@ -451,6 +453,9 @@ extern unsigned followfork;
 #ifdef USE_LIBUNWIND
 /* if this is true do the stack trace for every system call */
 extern bool stack_trace_enabled;
+#endif
+#ifdef USE_SECCOMP
+extern bool use_seccomp;
 #endif
 extern unsigned ptrace_setoptions;
 extern unsigned max_strlen;

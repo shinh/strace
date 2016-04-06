@@ -222,6 +222,7 @@ strace_CPPFLAGS += $(libunwind_CPPFLAGS)
 strace_LDFLAGS += $(libunwind_LDFLAGS)
 strace_LDADD += $(libunwind_LIBS)
 endif
+strace_LDADD += -lseccomp
 
 @CODE_COVERAGE_RULES@
 CODE_COVERAGE_LCOV_OPTIONS = \
