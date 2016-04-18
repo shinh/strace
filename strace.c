@@ -1196,22 +1196,14 @@ exec_or_die(void)
 	if (use_seccomp) {
 		scmp_filter_ctx sctx = seccomp_init(SCMP_ACT_ALLOW);
 		unsigned i;
-		for (i = 0; i < num_quals; i++) {
-			if (qual_flags[i] & QUAL_TRACE) {
-				if (seccomp_rule_add(sctx, SCMP_ACT_TRACE(42), i, 0) < 0) {
-					perror_msg_and_die("seccomp_rule_add");
-				}
-			}
-		}
+		seccomp_arch_remove(sctx, SCMP_ARCH_NATIVE);
+		if (seccomp_arch_add(sctx, AUDIT_ARCH_X86_64) < 0)
+			perror_msg_and_die("seccomp_arch_add");
 		if (seccomp_arch_add(sctx, AUDIT_ARCH_I386) < 0)
 			perror_msg_and_die("seccomp_arch_add");
 		for (i = 0; i < num_quals; i++) {
-			if (qual_vec[1][i] & QUAL_TRACE) {
-				// TODO: hmm why.
-				if (i >= 323)
-					break;
-				if (seccomp_rule_add(sctx, SCMP_ACT_TRACE(42), i, 0) < 0) {
-					fprintf(stderr, "FF %d\n", i);
+			if (qual_flags[i] & QUAL_TRACE) {
+				if (seccomp_rule_add(sctx, SCMP_ACT_TRACE(i), i, 0) < 0) {
 					perror_msg_and_die("seccomp_rule_add");
 				}
 			}
