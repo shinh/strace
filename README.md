@@ -1,3 +1,5 @@
+*[strace 5.3](https://github.com/strace/strace/releases/tag/v5.3) officially supports tracing with seccomp-bpf. I'd recommend you to try it!*
+
 This strace runs faster when you use it with some syscall filters.
 
     $ time sh -c "find . -name '*.mk' | xargs grep foobar > /dev/null"
