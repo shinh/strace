@@ -1,4 +1,4 @@
-*[strace 5.3](https://github.com/strace/strace/releases/tag/v5.3) officially supports tracing with seccomp-bpf. I'd recommend you to try it!*
+__[strace 5.3](https://github.com/strace/strace/releases/tag/v5.3) officially supports tracing with seccomp-bpf. I'd recommend you to try it instead of this experiment!__
 
 This strace runs faster when you use it with some syscall filters.
 
